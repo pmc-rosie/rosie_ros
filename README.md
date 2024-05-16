@@ -1,12 +1,12 @@
 # rosie_ros
 
-# This is my commit: ALEX BARIL
-test
+Authors:
+Alexandre Baril
+Alice Garceau
+Charles Bélanger
+Étienne Choquette-Potevin
+Étienne Marcoux
+Laurent Hamel
+Philippe Micho
+Sandrine Gagné
 
-
-test 2 
-
-
-test 3
-
-test etienne marcoux
