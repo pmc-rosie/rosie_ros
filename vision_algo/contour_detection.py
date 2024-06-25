@@ -1,32 +1,37 @@
 import cv2
 import numpy as np
-import cv2
-import numpy as np
-import cv2
-import numpy as np
+import math
 
-# Load the image
-image = cv2.imread('rosie_ros/vision_algo/pic/Screenshot from 2024-06-19 21-52-59.png')
+img = cv2.imread('rosie_ros/vision_algo/pic/Screenshot from 2024-06-19 21-52-40.png', 1)
 
-# Convert the image to grayscale
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# define the contrast and brightness value
+contrast = 3. # Contrast control ( 0 to 127)
+brightness = 0.1 # Brightness control (0-100)
 
-# Apply Gaussian blur to reduce noise
-blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+# call addWeighted function. use beta = 0 to effectively only operate on one image
+out = cv2.addWeighted( img, contrast, img, 1, brightness)
 
-# Perform edge detection using Canny
-edges = cv2.Canny(blurred, 50, 150)
+# Stacking the original image with the enhanced image
+# result = np.hstack((img, out))
+# cv2.namedWindow('Result', cv2.WINDOW_NORMAL)
+# cv2.resizeWindow('Result', 1000, 1000)
+# cv2.imshow('Result', result)
+# cv2.waitKey(0)
 
-# Perform Hough line detection
-lines = cv2.HoughLinesP(edges, 1, np.pi/180, threshold=100, minLineLength=80, maxLineGap=10)
+## [edge_detection]
+# Edge detection
+dst = cv2.Canny(out, 50, 200, None, 3)
+## [edge_detection]
 
-# Draw the detected lines on the original image
-for line in lines:
-    x1, y1, x2, y2 = line[0]
-    cv2.line(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+cv2.namedWindow("win", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("win", 1000, 1000)
+cv2.imshow("win", dst)
 
-# Display the result
-image = cv2.resize(image, (800, 600))
-cv2.imshow('Horizontal Lines', image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+ret,thresh = cv2.threshold(dst,50,255,0)
+contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+# cv2.namedWindow("win", cv2.WINDOW_NORMAL)
+# cv2.resizeWindow("win", 1000, 1000)
+# cv2.imshow("win", gray)
+
+cv2.waitKey()
