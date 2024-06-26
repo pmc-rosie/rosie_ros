@@ -1,11 +1,6 @@
 import cv2
 import numpy as np
 
-# Load images
-image1 = cv2.imread('cabinet_pictures\cabinet1.PNG')
-image2 = cv2.imread('cabinet_pictures\cabinet2.PNG')
-image3 = cv2.imread('cabinet_pictures\cabinet3.PNG')
-
 def align_and_crop(image):
     # Convert to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -55,29 +50,49 @@ def align_and_crop(image):
 
         # Apply the perspective transformation
         M = cv2.getPerspectiveTransform(rect, dst)
-        warped = cv2.warpPerspective(image, M, (maxWidth, 2*maxHeight))
+        warped = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
 
         return warped
     else:
         return image
 
-# Create a list of images
-images = [image1, image2, image3]
+def stitch_images(image_files):
+    # List to store aligned and cropped images
+    aligned_images = []
 
-# Initialize the stitcher
-stitcher = cv2.Stitcher_create()
+    # Align and crop each image
+    for image_file in image_files:
+        image = cv2.imread(image_file)
+        aligned_image = align_and_crop(image)
+        aligned_images.append(aligned_image)
 
-# Stitch the images
-status, stitched = stitcher.stitch(images)
+    # Determine the final output size
+    max_width = max(image.shape[1] for image in aligned_images)
+    total_height = sum(image.shape[0] for image in aligned_images)
 
-# Check if the stitching was successful
-if status == cv2.Stitcher_OK:
-    # Align and crop the stitched image
-    final_image = align_and_crop(stitched)
-    
-    # Save the final image
-    final_image_path = 'aligned_stitched_image.png'
-    cv2.imwrite(final_image_path, final_image)
-    print(f"Aligned stitched image saved at {final_image_path}")
-else:
-    print("Error during stitching process")
+    # Create the output image
+    output_image = np.zeros((total_height, max_width, 3), dtype=np.uint8)
+
+    # Stitch the images together
+    current_y = 0
+    for image in aligned_images:
+        height, width = image.shape[:2]
+        output_image[current_y:current_y + height, :width] = image
+        current_y += height
+
+    return output_image
+
+# List of image file paths to be stitched
+image_files = ['cabinet_picture/cabinet1.PNG', 'cabinet_picture/cabinet2.PNG', 'cabinet_picture/cabinet3.PNG']
+
+output_img = stitch_images(image_files)
+
+# Save the final stitched image
+final_image_path = 'aligned_stitched_image.png'
+cv2.imwrite(final_image_path, output_img)
+
+cv2.imshow('Stitched Image', output_img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+print(f"Aligned stitched image saved at {final_image_path}")
