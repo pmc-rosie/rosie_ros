@@ -1,0 +1,51 @@
+import cv2
+import numpy as np
+
+def blend_images(image1, image2, image3):
+    # Ensure all images have the same dimensions
+    height, width = image1.shape[:2]
+    image2 = cv2.resize(image2, (width, height))
+    image3 = cv2.resize(image3, (width, height))
+
+    # Convert images to float32 for blending
+    image1 = image1.astype(np.float32) / 255.0
+    image2 = image2.astype(np.float32) / 255.0
+    image3 = image3.astype(np.float32) / 255.0
+
+    # Blend images using alpha blending
+    blended1 = cv2.addWeighted(image1, 0.5, image2, 0.5, 0.0)
+    blended2 = cv2.addWeighted(blended1, 0.5, image3, 0.5, 0.0)
+
+    return (blended2 * 255).astype(np.uint8)
+
+def stack_images_vertically(image1, image2, image3):
+    # Align images (optional, you can skip this if not needed)
+    # aligned_image2 = align_images(image1, image2)
+    # aligned_image3 = align_images(image1, image3)
+    width = max(image1.shape[1], image2.shape[1], img3.shape[1])
+
+    # Resize all images to have the same width
+    image1 = cv2.resize(image1, (width, int(image1.shape[0] * width / image1.shape[1])))
+    image2 = cv2.resize(image2, (width, int(image2.shape[0] * width / image2.shape[1])))
+    image3 = cv2.resize(image3, (width, int(image3.shape[0] * width / image3.shape[1])))
+    # Stack images
+    stack12 = blend_images(image1, image2, image3)
+   #stack123 = blend_images(stack12, image3)
+
+    return stack12
+
+# Load images
+img1 = cv2.imread('Cabinet1.jpeg')
+img2 = cv2.imread('Cabinet2.jpeg')
+img3 = cv2.imread('Cabinet3.jpeg')
+
+# Stack images vertically
+result_image = stack_images_vertically(img1, img2, img3)
+
+# Save the result
+cv2.imwrite('stacked_image.jpg', result_image)
+
+# Display the result (optional)
+cv2.imshow('Stacked Image', result_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()

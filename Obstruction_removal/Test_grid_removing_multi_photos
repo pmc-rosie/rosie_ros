@@ -1,0 +1,57 @@
+import cv2
+import numpy as np
+
+# Function to align images
+def align_images(images):
+    aligned_images = []
+    base_image = images[0]
+    base_gray = cv2.cvtColor(base_image, cv2.COLOR_BGR2GRAY)
+    
+    for i in range(1, len(images)):
+        image_gray = cv2.cvtColor(images[i], cv2.COLOR_BGR2GRAY)
+        
+        # Detect ORB keypoints and descriptors
+        orb = cv2.ORB_create()
+        kp1, des1 = orb.detectAndCompute(base_gray, None)
+        kp2, des2 = orb.detectAndCompute(image_gray, None)
+        
+        # Match descriptors
+        bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+        matches = bf.match(des1, des2)
+        
+        # Sort matches by distance
+        matches = sorted(matches, key=lambda x: x.distance)
+        
+        # Extract location of good matches
+        points1 = np.zeros((len(matches), 2), dtype=np.float32)
+        points2 = np.zeros((len(matches), 2), dtype=np.float32)
+        
+        for j, match in enumerate(matches):
+            points1[j, :] = kp1[match.queryIdx].pt
+            points2[j, :] = kp2[match.trainIdx].pt
+        
+        # Find homography
+        h, mask = cv2.findHomography(points2, points1, cv2.RANSAC)
+        
+        # Use homography to warp image
+        height, width, channels = base_image.shape
+        aligned_image = cv2.warpPerspective(images[i], h, (width, height))
+        aligned_images.append(aligned_image)
+    
+    return [base_image] + aligned_images
+
+# Load images
+images = [cv2.imread(f'test_grid_{i}.jpg') for i in range(1,10)]
+aligned_images = align_images(images)
+
+# Stack the aligned images
+stacked_images = np.stack(aligned_images, axis=3)
+
+# Compute median along the stack axis to create the composite image
+composite_image = np.median(stacked_images, axis=3).astype(np.uint8)
+
+# Save and display the composite image
+cv2.imwrite('composite_image.jpg', composite_image)
+cv2.imshow('Composite Image', composite_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()

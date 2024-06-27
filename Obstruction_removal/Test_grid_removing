@@ -1,0 +1,32 @@
+import cv2
+import numpy as np
+
+# Load the image
+image = cv2.imread('test_grid_1.jpg')
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+# Apply edge detection
+edges = cv2.Canny(gray, 25, 50, apertureSize=3)
+
+# Detect lines using Hough Line Transform
+lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=100, maxLineGap=10)
+
+# Create a mask to remove the lines
+mask = np.ones_like(gray) * 255
+if lines is not None:
+    for line in lines:
+        x1, y1, x2, y2 = line[0]
+        cv2.line(mask, (x1, y1), (x2, y2), 0, 3)
+
+# Inpaint the image using the mask
+dst = cv2.inpaint(image, mask, 3, cv2.INPAINT_TELEA)
+
+# Save the result
+cv2.imwrite('result_image.jpg', dst)
+
+# Display the result
+cv2.imshow('Original Image', image)
+cv2.imshow('Lines Detected', edges)
+cv2.imshow('Inpainted Image', dst)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
