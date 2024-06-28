@@ -41,7 +41,7 @@ def align_images(images):
     return [base_image] + aligned_images
 
 # Load images
-images = [cv2.imread(f'test_grid_{i}.jpg') for i in range(1,10)]
+images = [cv2.imread(f'/Users/etiennechoquette/Documents/Ecole/ROSIE/Code/rosie_ros/Obstruction_removal/Genuille_grid_removal/test_grid_{i}.jpg') for i in range(1,10)]
 aligned_images = align_images(images)
 
 # Stack the aligned images
