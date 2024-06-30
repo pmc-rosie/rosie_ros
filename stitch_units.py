@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import os
 
 def align_and_crop(image):
     # Convert to grayscale
@@ -67,8 +68,10 @@ def stitch_images(image_files):
         aligned_images.append(aligned_image)
 
     # Determine the final output size
-    max_width = max(image.shape[1] for image in aligned_images)
-    total_height = sum(image.shape[0] for image in aligned_images)
+    max_width = 1000
+    total_height = 90*9
+    #max_width = max(image.shape[1] for image in aligned_images)
+    #total_height = sum(image.shape[0] for image in aligned_images)
 
     # Create the output image
     output_image = np.zeros((total_height, max_width, 3), dtype=np.uint8)
@@ -82,10 +85,40 @@ def stitch_images(image_files):
 
     return output_image
 
-# List of image file paths to be stitched
-image_files = ['cabinet_pictures/cabinet1.PNG', 'cabinet_pictures/cabinet2.PNG', 'cabinet_pictures/cabinet3.PNG']
 
-output_img = stitch_images(image_files)
+def crop(image_multiple_units, crop_size=(1000, 90), num_crops=9,  output_dir='cropped_images'):
+    # Create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+    cropped_units = []
+    image = cv2.imread(image_multiple_units[0])
+
+    # Get base filename without extension
+    filename = os.path.splitext(os.path.basename(image_multiple_units[0]))[0]
+
+    for units in range(num_crops):
+        top_left_x = 100
+        top_left_y = (units * 100) + 30  # Jump in increments of 100 pixels
+        cropped_image = image[top_left_y:top_left_y + crop_size[1], top_left_x:top_left_x + crop_size[0]]
+        
+        # Generate output filename
+        output_filename = f"{filename}_crop{units+1}.jpg"
+        output_path = os.path.join(output_dir, output_filename)
+        # Save the cropped image
+        cv2.imwrite(output_path, cropped_image)
+
+        # Append cropped image to list
+        cropped_units.append(cropped_image)
+
+    return cropped_units
+
+# Split image into units
+image_multiple_units = ['cabinet_pictures/cabinet1.PNG']
+cropped_units = crop(image_multiple_units)
+
+# List of image file paths to be stitched
+#image_files = ['cabinet_pictures/cabinet1.PNG', 'cabinet_pictures/cabinet2.PNG', 'cabinet_pictures/cabinet3.PNG']
+image_units = ['cropped_images/cabinet1_crop1.jpg', 'cropped_images/cabinet1_crop2.jpg', 'cropped_images/cabinet1_crop3.jpg', 'cropped_images/cabinet1_crop4.jpg', 'cropped_images/cabinet1_crop5.jpg', 'cropped_images/cabinet1_crop6.jpg', 'cropped_images/cabinet1_crop7.jpg', 'cropped_images/cabinet1_crop8.jpg', 'cropped_images/cabinet1_crop9.jpg']
+output_img = stitch_images(image_units)
 
 # Save the final stitched image
 final_image_path = 'aligned_stitched_image.png'
