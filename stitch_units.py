@@ -69,7 +69,7 @@ def stitch_images(image_files):
 
     # Determine the final output size
     max_width = 1000
-    total_height = 90*9
+    total_height = 100*9
     #max_width = max(image.shape[1] for image in aligned_images)
     #total_height = sum(image.shape[0] for image in aligned_images)
 
@@ -86,7 +86,7 @@ def stitch_images(image_files):
     return output_image
 
 
-def crop(image_multiple_units, crop_size=(1000, 90), num_crops=9,  output_dir='cropped_images'):
+def crop(image_multiple_units, crop_size=(1000, 100), num_crops=9,  output_dir='cropped_images'):
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
     cropped_units = []
@@ -97,7 +97,7 @@ def crop(image_multiple_units, crop_size=(1000, 90), num_crops=9,  output_dir='c
 
     for units in range(num_crops):
         top_left_x = 100
-        top_left_y = (units * 100) + 30  # Jump in increments of 100 pixels
+        top_left_y = (units * 100) + 20 # Jump in increments of 100 pixels
         cropped_image = image[top_left_y:top_left_y + crop_size[1], top_left_x:top_left_x + crop_size[0]]
         
         # Generate output filename
